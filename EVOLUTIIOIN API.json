@@ -1,0 +1,455 @@
+{
+  "createdAt": "2025-10-16T17:12:26.714Z",
+  "updatedAt": "2025-10-19T19:33:14.000Z",
+  "id": "iZSxq1MSj40jo2yQ",
+  "name": "EVOLUTIIOIN API",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ce90b905-3e5d-4ec5-b084-f226fc67cffb",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -400,
+        -16
+      ],
+      "id": "8986617c-2075-4228-98ab-09823fdfa7fb",
+      "name": "Webhook",
+      "webhookId": "ce90b905-3e5d-4ec5-b084-f226fc67cffb"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "56b8d9d4-87e3-4624-a402-7c45d9c2a80a",
+              "name": "remote_id",
+              "value": "={{ $json.body.data.key.remoteJid }}",
+              "type": "string"
+            },
+            {
+              "id": "307916fd-49c0-4a1f-8db7-16801bef05f3",
+              "name": "instance",
+              "value": "={{ $json.body.instance }}",
+              "type": "string"
+            },
+            {
+              "id": "ce0575dd-68a0-4a17-ae90-c03759f5514e",
+              "name": "apikey",
+              "value": "={{ $json.body.apikey }}",
+              "type": "string"
+            },
+            {
+              "id": "0b27ad87-089e-48e0-8be9-84da824e5959",
+              "name": "server_url",
+              "value": "={{ $json.body.server_url }}",
+              "type": "string"
+            },
+            {
+              "id": "12fed6c3-117e-4741-b178-7ae41b9fac67",
+              "name": "id",
+              "value": "={{ $json.body.data.key.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -240,
+        -16
+      ],
+      "id": "b168703d-7e54-4f8c-9ae8-ee0d48d1c8ae",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "resource": "chat-api",
+        "operation": "read-messages",
+        "instanceName": "={{ $('Webhook').item.json.body.instance }}",
+        "remoteJid": "={{ $('Webhook').item.json.body.data.key.remoteJid }}",
+        "messageId": "={{ $('Webhook').item.json.body.data.key.id }}"
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        -16
+      ],
+      "id": "8b610976-da70-4be0-9c22-c5811e9ebb83",
+      "name": "Marcar mensagens como lidas",
+      "credentials": {
+        "evolutionApi": {
+          "id": "6KPhn5dEaCDohf2U",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Mensaje del usuario: Soy{{ $('Webhook').item.json.body.data.pushName }} y el mensaje es: {{ $('Webhook').item.json.body.data.message.conversation }}",
+        "options": {
+          "systemMessage": "Eres un asistente altamente eficiente.\nTu misión es motivar al usurario a tener una conversación contigo. Responde con textos largos. \n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        48,
+        -16
+      ],
+      "id": "b56d9e1e-105e-49ff-bc23-3b26f461d443",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        160,
+        192
+      ],
+      "id": "ba6619d1-2372-489f-8347-6209c0128816",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ifSfOafkdG41fDnn",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=procesa el siguiente mensaje:  {{ $json.output }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "divide el texto en frases cortas y coherentes, con un máximo de 4 frases. Omite las demás"
+            }
+          ]
+        },
+        "batching": {
+          "batchSize": 4
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        320,
+        -16
+      ],
+      "id": "4fdaf012-fb46-42a6-a6d0-d38a23ab80c4",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\"respuesta1\": \"texto\",\n    \"respuesta2\": \"texto\",\n    \"respuesta3\": \"texto\",\n    \"respuesta3\": \"texto\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        464,
+        192
+      ],
+      "id": "4310476f-ba56-4f6c-bda8-985a3f11a2e5",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "={{ $('Edit Fields').item.json.instance }}",
+        "remoteJid": "={{ $('Webhook').item.json.body.data.key.remoteJid }}",
+        "messageText": "={{ $('Loop Over Items').item.json.output[0] }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        1088,
+        -448
+      ],
+      "id": "eba17350-a049-472e-9714-3ee4f809013b",
+      "name": "Enviar texto",
+      "credentials": {
+        "evolutionApi": {
+          "id": "6KPhn5dEaCDohf2U",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://d147440f3589.ngrok-free.app/message/sendText/{{ $('Webhook').item.json.body.instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=1E8644F1B68F-4606-8C06-B17BFCE38AA6"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n\"number\":\"573236570699\",\n\"text\":\"Hola\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1008,
+        -16
+      ],
+      "id": "3d73d6e0-303d-4b81-9c3f-12c1617d5035",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const remoteid = $('Webhook').first().json.body.data.key.remoteJid;\n\n// 2. Procésalo\nconst numero = remoteid.split(\"@\")[0];\n\n// 3. Devuelve el resultado en el formato correcto\n// Esta es la línea que le entrega los datos a la plataforma.\nreturn [{ numero: numero }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        -16
+      ],
+      "id": "bcef4a16-6d36-422f-b28e-256dd8474f86",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "url": "=https://d147440f3589.ngrok-free.app/instance/connectionState/n8n",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "1E8644F1B68F-4606-8C06-B17BFCE38AA6"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        -448
+      ],
+      "id": "0ab92700-8a86-498f-9df1-dbc45a4d851f",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://d147440f3589.ngrok-free.app/instance/restart/n8n",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=1E8644F1B68F-4606-8C06-B17BFCE38AA6"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        -448
+      ],
+      "id": "8a66a86e-5edb-4eab-805b-bd213e94e4d8",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -336,
+        -336
+      ],
+      "id": "ea8dbe16-4342-427a-89b7-d44dfeb1e2b2",
+      "name": "When chat message received",
+      "webhookId": "524e5ef4-66e2-44d3-a670-7cf377f17711"
+    },
+    {
+      "parameters": {
+        "resource": "chat-api",
+        "operation": "read-messages",
+        "instanceName": "={{ $('Webhook').item.json.body.instance }}",
+        "remoteJid": "={{ $('Webhook').item.json.body.data.key.remoteJid }}",
+        "messageId": "={{ $('Webhook').item.json.body.data.key.id }}"
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        -336
+      ],
+      "id": "f529aa98-3d03-43fe-b076-8e21587e13dd",
+      "name": "Marcar mensagens como lidas1",
+      "credentials": {
+        "evolutionApi": {
+          "id": "6KPhn5dEaCDohf2U",
+          "name": "Evolution account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Marcar mensagens como lidas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar mensagens como lidas": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar texto": {
+      "main": [
+        []
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        []
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Marcar mensagens como lidas1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "9c7ad776-bdfb-4e5a-8c8a-9dea746cc25e",
+  "triggerCount": 2,
+  "shared": [
+    {
+      "createdAt": "2025-10-16T17:12:26.718Z",
+      "updatedAt": "2025-10-16T17:12:26.718Z",
+      "role": "workflow:owner",
+      "workflowId": "iZSxq1MSj40jo2yQ",
+      "projectId": "Hsc2LcKTpV0xRSJz"
+    }
+  ],
+  "tags": []
+}
