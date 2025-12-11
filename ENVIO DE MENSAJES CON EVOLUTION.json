@@ -1,0 +1,309 @@
+{
+  "createdAt": "2025-10-21T02:17:33.905Z",
+  "updatedAt": "2025-10-21T02:19:07.000Z",
+  "id": "6mDrsDiJsIt85eex",
+  "name": "ENVIO DE MENSAJES CON EVOLUTION",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.inputs.remoteJid }}"
+      },
+      "id": "a6dd40cb-5078-47e3-be76-ae6c8a77f8c4",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.2,
+      "position": [
+        288,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://evolution-evolution.uiarru.easypanel.host/evolutionBot/changeStatus/Valen",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=AQUI TU API KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"remoteJid\": \"{{ $json.key.remoteJid }}\",\n    \"status\": \"closed\"\n}",
+        "options": {}
+      },
+      "id": "b79e5fb5-7bcb-46de-9250-0e95e5a5d368",
+      "name": "cerrar sesion",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        944,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n    json: {\n        output: $json.output\n            .replace(/\\n+/g, '\\\\n')  // Convierte saltos de línea en \\n escapados\n            .replace(/\\\\n\\s+/g, '\\\\n')  // Elimina espacios extra después de cada \\n\n            .replace(/\\s+\\\\n/g, '\\\\n')  // Elimina espacios extra antes de cada \\n\n            .replace(/\\\\n\\\\n/g, '\\\\n')  // Reduce múltiples \\n consecutivos a uno solo\n            .trim()\n    }\n}];"
+      },
+      "id": "96a09355-53ba-4429-a3fb-8d9a78ddc852",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Consulta la disponibilidad del calendario",
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "b998c3d8805fde724df327908d9fc7006119c60e92e47a23d905b3f8116d964a@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "VA360 - CONSULTORIAS"
+        },
+        "limit": 10,
+        "options": {
+          "timeMin": "={{ $now }}"
+        }
+      },
+      "id": "c79d5116-1e6e-4221-8f2f-5b7d02ae5f1e",
+      "name": "Google Calendar",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.2,
+      "position": [
+        592,
+        272
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "ReMJGXmApW6SOLH1",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini-2024-07-18",
+        "options": {}
+      },
+      "id": "70e4ee9a-afec-4d48-a9b9-684349a36dfe",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        160,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Crea la cita en el calendario",
+        "calendar": {
+          "__rl": true,
+          "value": "b998c3d8805fde724df327908d9fc7006119c60e92e47a23d905b3f8116d964a@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "VA360 - CONSULTORIAS"
+        },
+        "start": "={{ $fromAI(\"datetime_start\") }}",
+        "end": "={{ $fromAI(\"datetime_end\") }}",
+        "additionalFields": {
+          "summary": "=Consultoría con: {{ $fromAI(\"name\") }}"
+        }
+      },
+      "id": "bfc12607-b3bd-4e57-bd0a-23792fcf00e9",
+      "name": "Google Calendar1",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.2,
+      "position": [
+        432,
+        272
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "ReMJGXmApW6SOLH1",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://evolution-evolution.uiarru.easypanel.host/message/sendText/Valen",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=AQUI TU API KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"number\": \"{{ $('Webhook').item.json.body.user }}\",\n    \"text\": \"{{ $json.output }}\"\n}",
+        "options": {}
+      },
+      "id": "067e64e9-669a-4137-bf32-3786ed89ae73",
+      "name": "Enviar texto",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        784,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "69d6683b-55ed-47e1-ad36-dce7a7e1c751",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "28ad330d-db5c-4bcf-b821-b6e88e3c827e",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "69d6683b-55ed-47e1-ad36-dce7a7e1c751"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=El usuario necesita información sobre: {{ $('Webhook').item.json.body.query }}",
+        "options": {
+          "systemMessage": "=Eres un asistente muy amable de la comunidad VA360. Ayudas a Valen a gestionar sus citas de consultoría.\n\nRespuestas muy cortas y concisas. Sin ningún tipo de caracter especial\nNo añadas enlaces de ningún tipo. Solo la información que te he dicho.\n\nNo des cita en días festivos de españa. Si el usuario te pide cita tiene que darte un datetime_start y tu tienes que devolver un datetime_end que es 60 minutos más que el datetime_start\n\nAntes de confirmar una cita pide el nombre al usuario.\n\nVA360 es una comunidad privada de Valen en la que hay personas profesionales de la inteligencia artificial, el marketing y los negocios online. Para acceder hay que hacerlo a través de su web va360.pro y realizar un pago anual.\n\nVA360 también tiene una academia en la que tenemos cursos de automatizaciones de procesos con N8N y Make (integromat).\n\nSomos más de 400 personas trabajando cada día para compartir información y estar a la última de los negocios online y la inteligencia artificial.\n\nLa fecha y hora de ahora mismo es: {{ $now }}"
+        }
+      },
+      "id": "6bebc73a-7735-4f55-8c48-9ac76cf8c365",
+      "name": "CITA&INFO",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        288,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "CITA&INFO",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Enviar texto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "CITA&INFO",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "CITA&INFO",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar1": {
+      "ai_tool": [
+        [
+          {
+            "node": "CITA&INFO",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar texto": {
+      "main": [
+        [
+          {
+            "node": "cerrar sesion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "CITA&INFO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CITA&INFO": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "ef5ca9de-b2ff-49a3-9b1e-e273b5e6a478",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "createdAt": "2025-10-21T02:17:33.908Z",
+      "updatedAt": "2025-10-21T02:17:33.908Z",
+      "role": "workflow:owner",
+      "workflowId": "6mDrsDiJsIt85eex",
+      "projectId": "Hsc2LcKTpV0xRSJz"
+    }
+  ],
+  "tags": []
+}
