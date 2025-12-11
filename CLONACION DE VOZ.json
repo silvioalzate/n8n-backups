@@ -1,0 +1,902 @@
+{
+  "createdAt": "2025-09-11T20:18:11.773Z",
+  "updatedAt": "2025-09-12T03:16:41.000Z",
+  "id": "EhK0lj6iS7N5Zj6b",
+  "name": "CLONACION DE VOZ",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        224,
+        512
+      ],
+      "id": "847e9251-53ff-4bdb-8b94-bf977d120989",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8004/v1/audio/speech",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"tts-1\",\n  \"input\": \"{{ $json.text }}\",\n  \"voice\": \"Jade.wav\",\n  \"response_format\": \"wav\",\n  \"speed\": 1,\n  \"seed\": 0\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1248,
+        272
+      ],
+      "id": "a4120d50-7ca6-478e-b251-b68fe483a9e5",
+      "name": "OpenAI End Point",
+      "notesInFlow": true,
+      "notes": "/v1/audio/speech"
+    },
+    {
+      "parameters": {
+        "url": "http://host.docker.internal:8004/get_predefined_voices",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        80
+      ],
+      "id": "c394feb8-33e9-4786-80ec-fe00ce9754b3",
+      "name": "Get Predefined Voices",
+      "notesInFlow": true,
+      "notes": "/get_predefined_voices"
+    },
+    {
+      "parameters": {
+        "url": "http://host.docker.internal:8004/get_reference_files",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        272
+      ],
+      "id": "065d06b3-2917-4678-8c58-c03bf961e92e",
+      "name": "Get Reference Files",
+      "notesInFlow": true,
+      "notes": "/get_reference_files"
+    },
+    {
+      "parameters": {
+        "content": "## Helpers",
+        "height": 440,
+        "width": 320,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        592,
+        0
+      ],
+      "id": "c9eae74c-7a21-4312-a8fe-e954d9b3d53f",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8004/tts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"{{ $json.text }}\",\n  \"voice_mode\": \"clone\",\n  \"predefined_voice_id\": \"Abigail.wav\",\n  \"reference_audio_filename\": \"Gianna.wav\",\n  \"output_format\": \"wav\",\n  \"split_text\": true,\n  \"chunk_size\": 120,\n  \"temperature\": 0.7,\n  \"exaggeration\": 0.4,\n  \"cfg_weight\": 0.5,\n  \"seed\": 0,\n  \"speed_factor\": 1,\n  \"language\": \"en\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1248,
+        80
+      ],
+      "id": "6ad88a2f-de24-4bb6-b93c-10a1d1eaf9c9",
+      "name": "Generate TTS",
+      "notesInFlow": true,
+      "notes": "/tts"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7745bbfa-8293-487a-b0b4-dac9ec9b9858",
+              "name": "text",
+              "value": "=Welcome to chatter box text-to-speech demonstration. This sample is designed to showcase clear and natural voice synthesis, with smooth pacing and pronunciation.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        992,
+        80
+      ],
+      "id": "6c790b9d-4893-47b0-bc36-15feb49b0f65",
+      "name": "Text"
+    },
+    {
+      "parameters": {
+        "content": "## TTS Generation",
+        "height": 440,
+        "width": 540,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        928,
+        0
+      ],
+      "id": "b54ecfef-06ed-4cc9-b4a6-e10aff6edb4b",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7745bbfa-8293-487a-b0b4-dac9ec9b9858",
+              "name": "text",
+              "value": "=Welcome to chatter box text-to-speech demonstration. This sample is designed to showcase clear and natural voice synthesis, with smooth pacing and pronunciation.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        992,
+        272
+      ],
+      "id": "52410930-4311-4563-aa21-50b559764591",
+      "name": "Text1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8004/tts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"{{ $json.text }}\",\n  \"voice_mode\": \"predefined\",\n  \"predefined_voice_id\": \"{{ $('Loop Over Items1').item.json.filename }}\",\n  \"reference_audio_filename\": \"string\",\n  \"output_format\": \"wav\",\n  \"split_text\": true,\n  \"chunk_size\": 120,\n  \"temperature\": 0.8,\n  \"exaggeration\": 0.4,\n  \"cfg_weight\": 0.5,\n  \"seed\": 0,\n  \"speed_factor\": 1,\n  \"language\": \"en\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1584,
+        624
+      ],
+      "id": "2e414622-f92c-4aca-baf6-07bcf6e1e139",
+      "name": "Generate TTS1",
+      "notesInFlow": true,
+      "notes": "/tts"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7745bbfa-8293-487a-b0b4-dac9ec9b9858",
+              "name": "text",
+              "value": "=Welcome to chatter box text-to-speech demonstration. This sample is designed to showcase clear and natural voice synthesis, with smooth pacing and pronunciation.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1360,
+        624
+      ],
+      "id": "3dc17591-ee46-4bcd-a0d6-b1e88784f851",
+      "name": "Text2"
+    },
+    {
+      "parameters": {
+        "url": "http://host.docker.internal:8004/get_predefined_voices",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        672,
+        608
+      ],
+      "id": "e9285965-103d-45a8-84d0-6982154cbf4d",
+      "name": "Get Predefined Voices1",
+      "notesInFlow": true,
+      "notes": "/get_predefined_voices"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1104,
+        608
+      ],
+      "id": "7359dd1b-7aa1-4800-8d72-94b001d3a3ad",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "maxItems": 5
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        864,
+        608
+      ],
+      "id": "fa576ae6-983d-48d1-936e-25f0c8a7ed56",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "jsCode": "$input.item.binary.data.fileName = $('Loop Over Items1').first().json.filename\n\nreturn $input.item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1808,
+        624
+      ],
+      "id": "22830da4-0572-40a6-b49a-94500f278d25",
+      "name": "Set File Name1"
+    },
+    {
+      "parameters": {
+        "content": "## 🗣️ ChatterBox TTS Workflow (Demo)  \nThis n8n workflow showcases several demos using the **ChatterBox TTS** API, including:  \n- 🎤 Retrieving predefined voices via n8n nodes  \n- 🗣️ Using reference voices for voice cloning  \n- 🔊 Basic speech synthesis with selected voices  \n- 🤖 Utilizing the OpenAI TTS endpoint for advanced synthesis  \n\n### 💡 Notes  \n- This workflow is **completely free to use** — feel free to remix, modify, and build on top of it.  \n- Designed for local dev environments (`host.docker.internal`), so adjust endpoints as needed for deployment.  ",
+        "height": 880,
+        "width": 560,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d25c46a4-3bd9-4ef0-9be7-52e959cdc003",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## Generate Speech for all predefined voices",
+        "height": 420,
+        "width": 1480,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        592,
+        464
+      ],
+      "id": "5ba1d2e2-1a07-4114-8ccb-1e16c6299510",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Save elevenlabs Voices",
+        "height": 420,
+        "width": 1480
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        592,
+        1344
+      ],
+      "id": "f12244f9-defb-4870-b76f-b3fe05d0a7a3",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        912,
+        1520
+      ],
+      "id": "e073efa2-6e29-4ef2-8e1c-627d912fa9c9",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "jsCode": "$input.item.binary.data.fileName = $input.first().json.name + '_' + $input.first().json.voice_id + \".\" + $input.item.binary.data.fileExtension\n\nreturn $input.item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        1440
+      ],
+      "id": "659e766b-75bc-48ea-b850-cf2e3ec67b5c",
+      "name": "Set File Name"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1792,
+        1520
+      ],
+      "id": "fc4e27b0-b0ec-426d-8db5-7c18b719b9e8",
+      "name": "Wait",
+      "webhookId": "eaadf041-1d38-42ad-bae0-f1a53da96647"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8004/tts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"{{ $json.text }}\",\n  \"voice_mode\": \"clone\",\n  \"predefined_voice_id\": \"\",\n  \"reference_audio_filename\": \"{{ $('Loop Over Items2').item.json.body }}\",\n  \"output_format\": \"wav\",\n  \"split_text\": true,\n  \"chunk_size\": 120,\n  \"temperature\": 0.8,\n  \"exaggeration\": 0.4,\n  \"cfg_weight\": 0.5,\n  \"seed\": 0,\n  \"speed_factor\": 1,\n  \"language\": \"en\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1728,
+        1008
+      ],
+      "id": "9735f67d-881f-4752-a562-85ede1c006c4",
+      "name": "Generate TTS2",
+      "notesInFlow": true,
+      "notes": "/tts"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7745bbfa-8293-487a-b0b4-dac9ec9b9858",
+              "name": "text",
+              "value": "=Welcome to chatter box text-to-speech demonstration. This sample is designed to showcase clear and natural voice synthesis, with smooth pacing and pronunciation.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1504,
+        1008
+      ],
+      "id": "d0e28883-8b3c-4213-9ab3-163096760b66",
+      "name": "Text3"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1280,
+        1008
+      ],
+      "id": "ee922e6a-598a-426b-bdc0-e3bf0cf38018",
+      "name": "Loop Over Items2"
+    },
+    {
+      "parameters": {
+        "maxItems": 50
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        1088
+      ],
+      "id": "629b28c3-e27e-48fa-b824-9005c3c04bee",
+      "name": "Limit1"
+    },
+    {
+      "parameters": {
+        "jsCode": "$input.item.binary.data.fileName = $('Loop Over Items2').first().json.body\n\nreturn $input.item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1952,
+        1088
+      ],
+      "id": "b103736f-d678-4d50-9e9d-0a5d9712d43d",
+      "name": "Set File Name2"
+    },
+    {
+      "parameters": {
+        "content": "## Generate Speech for all reference voices",
+        "height": 420,
+        "width": 1540,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        592,
+        912
+      ],
+      "id": "5e4cddf8-2087-48d4-acc9-d80de7b56028",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "body",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        848,
+        1088
+      ],
+      "id": "cc8ee7bf-b382-4a73-bd06-af8790c9f02a",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.preview_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        1440
+      ],
+      "id": "a024f0b7-fda7-4030-a8bb-e619e7bf508e",
+      "name": "Download Audio"
+    },
+    {
+      "parameters": {
+        "url": "http://host.docker.internal:8004/get_reference_files",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        672,
+        1088
+      ],
+      "id": "c1b058ab-64e8-45ff-8574-3caa1501ad20",
+      "name": "Get Reference Voices",
+      "notesInFlow": true,
+      "notes": "/get_reference_files"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8004/upload_reference",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "files",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1568,
+        1440
+      ],
+      "id": "c146e39b-b6cc-454b-8d7e-5ddebe7bf378",
+      "name": "Upload Reference",
+      "notes": "/upload_reference"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-elevenlabs.elevenLabs",
+      "typeVersion": 1,
+      "position": [
+        656,
+        1504
+      ],
+      "id": "b7ef6bba-b3bf-45bc-b85d-95ae9103409b",
+      "name": "Download history item audio"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "requestOptions": {}
+      },
+      "type": "@elevenlabs/n8n-nodes-elevenlabs.elevenLabs",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "da53d3c9-cc0a-4e22-8eb5-dfb7b219e216",
+      "name": "Get many voices"
+    }
+  ],
+  "connections": {
+    "Text": {
+      "main": [
+        [
+          {
+            "node": "Generate TTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text1": {
+      "main": [
+        [
+          {
+            "node": "OpenAI End Point",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text2": {
+      "main": [
+        [
+          {
+            "node": "Generate TTS1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Predefined Voices1": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Text2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate TTS1": {
+      "main": [
+        [
+          {
+            "node": "Set File Name1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set File Name1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Download Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set File Name": {
+      "main": [
+        [
+          {
+            "node": "Upload Reference",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate TTS2": {
+      "main": [
+        [
+          {
+            "node": "Set File Name2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text3": {
+      "main": [
+        [
+          {
+            "node": "Generate TTS2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Text3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set File Name2": {
+      "main": [
+        [
+          {
+            "node": "Limit1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Limit1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Audio": {
+      "main": [
+        [
+          {
+            "node": "Set File Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Reference Voices": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Reference": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "2427b1a6-6c8f-4a3f-be7b-3ddb66cc5bb9",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "createdAt": "2025-09-11T20:18:11.779Z",
+      "updatedAt": "2025-09-11T20:18:11.779Z",
+      "role": "workflow:owner",
+      "workflowId": "EhK0lj6iS7N5Zj6b",
+      "projectId": "Hsc2LcKTpV0xRSJz"
+    }
+  ],
+  "tags": [
+    {
+      "createdAt": "2025-09-12T03:16:39.643Z",
+      "updatedAt": "2025-09-12T03:16:39.643Z",
+      "id": "EjipKkGrKf5YDYdB",
+      "name": "AVATAR PARLANTE"
+    },
+    {
+      "createdAt": "2025-09-09T20:21:54.065Z",
+      "updatedAt": "2025-09-09T20:21:54.065Z",
+      "id": "IJiDWRqYgjWYBQWQ",
+      "name": "TELEGRAM"
+    },
+    {
+      "createdAt": "2025-09-12T03:15:48.844Z",
+      "updatedAt": "2025-09-12T03:15:48.844Z",
+      "id": "YSQ1kBuv3a2gBTkG",
+      "name": "CHATTERBOX"
+    }
+  ]
+}
