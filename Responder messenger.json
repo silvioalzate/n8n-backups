@@ -1,0 +1,182 @@
+{
+  "createdAt": "2025-11-07T21:10:30.686Z",
+  "updatedAt": "2025-11-10T21:39:08.000Z",
+  "id": "xufsAl2prsBNZVIM",
+  "name": "Responder messenger",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "verifyToken": "n8n-messenger"
+      },
+      "type": "n8n-nodes-facebookmessenger.facebookMessengerTrigger",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        -128
+      ],
+      "id": "92a4326e-d6f4-4a9c-821d-aa1b624b7b24",
+      "name": "Facebook Messenger Trigger",
+      "webhookId": "ede24848-a4e5-4ec8-8bf5-53bf79eed8fa",
+      "credentials": {
+        "facebookMessengerApi": {
+          "id": "0lnaLMNvhrheUIWA",
+          "name": "Facebook Messenger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "Rol y Contexto: Eres un Asistente Virtual de Servicio al Cliente y Ventas para Silvio Alzate, una empresa que se especializa en ayudar a emprendedores a automatizar tareas repetitivas.\n\nPersonalidad y Tono: Tu tono debe ser amigable y cercano. Utiliza un lenguaje claro y conciso. Siempre mantente servicial y paciente. No uses emojis a menos que el tono sea amigable y apropiado.\n\nDirectrices de Respuesta:\n\nPrioridad: Responde a la pregunta o solicitud del usuario de la manera más directa y útil posible.\n\n\n\nLímite de Conocimiento: Si la pregunta está fuera del contexto de Silvio Alzate o no tienes la información, responde con \"\nesta pregunta está fuera de mi área de conocimiento. Por favor, consulta nuestro sitio web en https://www.silvioalzate.shop o espera a ser atendido por un agente humano.\"\n\nObjetivo de Venta: Siempre que sea natural y relevante, guía la conversación hacia una conversión.\n\nMemoria de Chat: Considera la conversación previa con el usuario para mantener el contexto."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -80,
+        -128
+      ],
+      "id": "3b0b979d-3f70-4d6e-9baa-1d01fee8d70c",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        32
+      ],
+      "id": "7559f034-52e7-423f-9d1e-304179b7a58e",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ifSfOafkdG41fDnn",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Facebook Messenger Trigger').item.json.recipientId }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        16,
+        32
+      ],
+      "id": "82827f1f-b710-406c-a46f-9270c477a89d",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "recipientId": "={{ $('Facebook Messenger Trigger').item.json.recipientId }}",
+        "messageText": "={{ $json.output }}"
+      },
+      "type": "n8n-nodes-facebookmessenger.facebookMessengerSend",
+      "typeVersion": 1,
+      "position": [
+        272,
+        -128
+      ],
+      "id": "2971d9e1-3a17-44cb-8eb1-ebbad2245335",
+      "name": "Facebook Messenger Send",
+      "credentials": {
+        "facebookMessengerApi": {
+          "id": "0lnaLMNvhrheUIWA",
+          "name": "Facebook Messenger account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Facebook Messenger Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Facebook Messenger Send",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Facebook Messenger Trigger": [
+      {
+        "json": {
+          "eventType": "messages",
+          "senderId": "3778386598948619",
+          "recipientId": "1742634425975199",
+          "timestamp": 1762561213684,
+          "pageId": "1742634425975199",
+          "messageId": "m_Nnz3kyfg3UJp85EaRfyAChNX8vgCLdwPJja8I1PgI7F_Rhkq7Ds1j3qwoRFBExS7FKgPPbzpx9vb3otjpJUmpg",
+          "text": "Hola"
+        }
+      }
+    ]
+  },
+  "versionId": "6c7b987e-26d5-45ad-851b-5de8adc58656",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "createdAt": "2025-11-07T21:10:30.691Z",
+      "updatedAt": "2025-11-07T21:10:30.691Z",
+      "role": "workflow:owner",
+      "workflowId": "xufsAl2prsBNZVIM",
+      "projectId": "Hsc2LcKTpV0xRSJz"
+    }
+  ],
+  "tags": []
+}
