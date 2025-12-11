@@ -1,0 +1,1508 @@
+{
+  "createdAt": "2025-10-21T02:44:42.511Z",
+  "updatedAt": "2025-10-21T02:44:42.511Z",
+  "id": "cYv9g09LdUXfOhRL",
+  "name": "TELEGRAM BOT",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        944,
+        320
+      ],
+      "id": "830100ac-c1f4-4ee8-963f-13cc860efe4b",
+      "name": "Get Audio File",
+      "webhookId": "b9ec8276-c153-4b94-86db-b91a4e20d5bc"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1152,
+        320
+      ],
+      "id": "a6b3a02a-d753-49a1-bb06-3d37c5249031",
+      "name": "Transcribe Recording"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "text": "What's in this image? Reply in Spanish.",
+        "inputType": "base64",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1152,
+        704
+      ],
+      "id": "db6a3ba9-03f3-4c7f-a036-29b938d9c2cf",
+      "name": "Analyze image"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.cloud.llamaindex.ai/api/v1/parsing/upload",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        944,
+        928
+      ],
+      "id": "4591c938-6541-4b2b-b3ac-e100373476af",
+      "name": "Upload Doc"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.cloud.llamaindex.ai/api/v1/parsing/job/{{ $json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1152,
+        928
+      ],
+      "id": "8408db6c-1955-406c-aa1c-e4000471d38f",
+      "name": "Get Doc Processing Info"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "45791e1c-3a0b-4bbf-902c-20340548a0fc",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "SUCCESS",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1328,
+        928
+      ],
+      "id": "19169805-f036-4fac-a2d7-0ee27eadd0e1",
+      "name": "Is Ready"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.cloud.llamaindex.ai/api/v1/parsing/job/{{$json.id}}/result/markdown",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1760,
+        912
+      ],
+      "id": "22fa2e2f-3780-4af7-aee4-e6b184d278f3",
+      "name": "Download Markdown Info"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "Lo sentimos, no puedo procesar lo que has enviado.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        720,
+        1152
+      ],
+      "id": "42fd0774-4211-4b06-94d7-ed81c18fbb71",
+      "name": "Notify About Message",
+      "webhookId": "79a39611-fd1b-4719-b2d2-4250e1f20a9b"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1d1411b8-e185-417c-86ce-b7af234efc3c",
+              "name": "text",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "8320262c-39ca-4dc2-a1df-3610ccdc5f76",
+              "name": "caption",
+              "value": "={{ $('Telegram Trigger').item.json.message.caption || null }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2160,
+        624
+      ],
+      "id": "bb422608-2bce-4835-818d-71397eaa3a75",
+      "name": "Get Message"
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "={{ $('Telegram Trigger').item.json.message.from.id.toString() }}",
+        "messageData": "={{ $json.text }}",
+        "tail": true
+      },
+      "name": "Save Text to Redis",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        2352,
+        624
+      ],
+      "id": "3c7f9f71-359d-428e-bd69-1b7e208729e1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.messages.last() }}",
+              "rightValue": "={{ $('Get Message').item.json.text }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              },
+              "id": "f467654c-56fd-466d-a83b-54ab2aead0e2"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "name": "Check Continue Condition",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3120,
+        624
+      ],
+      "id": "97a4ce89-8d4d-4300-a0b2-c9c57fd43f9a"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ $('Telegram Trigger').item.json.message.from.id.toString() }}"
+      },
+      "name": "Delete Redis Key",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        3360,
+        608
+      ],
+      "id": "c2844634-5143-438d-825f-7af73ff0336f"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inItem = $input.first(); \nconst text   = (inItem.json.text ?? '').trim();\nconst WORDS_PER_MIN = 170;\n\nconst wordCount = text.length\n  ? text.split(/\\s+/).filter(w => w).length\n  : 0;\n\nconst wordsPerSec = WORDS_PER_MIN / 60;\nconst delaySeconds = Math.ceil(wordCount / wordsPerSec);\n\nreturn [{\n    delay: delaySeconds\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2528,
+        624
+      ],
+      "id": "f28957e5-8ec7-408f-921a-c872a4e71317",
+      "name": "Split Paragraphs & Reading Delay"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "=messages",
+        "key": "={{ $('Telegram Trigger').item.json.message.from.id.toString() }}",
+        "keyType": "list",
+        "options": {
+          "dotNotation": false
+        }
+      },
+      "name": "Get Text from Redis3",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        2912,
+        624
+      ],
+      "id": "ec5dc032-b93f-47d0-a2c1-1ed7e706dcc4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "766ddb8b-7a01-4093-a26b-a60552adddf0",
+              "leftValue": "={{ $('Telegram Trigger').item.json.message.voice.file_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4032,
+        608
+      ],
+      "id": "8b35c2f4-ba9f-43ab-b07f-47312920f19d",
+      "name": "Should Respond With Audio"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        3792,
+        880
+      ],
+      "id": "76abd799-7245-4e8c-a09b-554ea1e2669b",
+      "name": "Calculator2"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+      "typeVersion": 1,
+      "position": [
+        3904,
+        880
+      ],
+      "id": "3aa7c9f3-1943-48f2-9c9c-70a39ae54b55",
+      "name": "Wikipedia2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.messages.join() }}\nCaption: {{ $json.messages.caption || null }}",
+        "options": {
+          "systemMessage": "=Role: You are Bob, you are not an AI language model, you are a highly skilled assistant with 5+ years of experience, you are 35 years old. You are indispensable to the workflow, always motivated to deliver humanized answers. Your personality is efficient, and polite. If the incoming message includes a caption, you must analyze both the main message and the caption together as a single context to determine what the user wants to know.\n\nSteps:\n\n1. Receive the user's text input and check if a caption exists.\n2. If a caption exists:\n    - Combine the main message and the caption as a single text block.\n    - Analyze the combined text to determine the full context and the user's intent.\n3. If no caption exists:\n    - Analyze the message text to determine the user's intent.\n4. Decide whether the question requires:\n    - A factual search (informative), or\n    - A mathematical calculation.\n5. If informative:\n    - Search Wikipedia for the most relevant information.\n    - Summarize the information clearly and concisely.\n6. If a calculation:\n    - Use the Calculator tool to perform the computation.\n    - Present the result in a clear format.\n7. If the question is unclear:\n    - Politely ask the user to clarify their request.\n8. Always reply in Spanish.\n\nSpecifications/Tools:\n - Wikipedia: To search for factual or encyclopedic information.\n - Calculator: To execute mathematical operations or solve numerical queries.\n\nContext: The assistant is responsible for interpreting diverse text inputs and providing precise answers, either by retrieving verified information from Wikipedia or performing calculations. It ensures users receive quick, reliable, and context-aware responses. If the message includes a caption, the assistant must consider both the message and the caption as a single context to better understand the user’s request.\n\nExamples:\nInput: \"¿Cuántos habitantes tiene Alemania?\"\nOutput: \"Según Wikipedia, Alemania tiene aproximadamente 83 millones de habitantes. \n\nInput:\nMensaje: \"Dime el resultado de esta operación\"\nCaption: \"345 por 67\"\nOutput: \"El resultado de 345 × 67 es 23,115.\"\n\nNotes:\n- Keep responses polite and factual.\n- If the required information is not found, inform the user politely and suggest alternatives.\n- Maintain a neutral and professional tone.\n- Always reply in Spanish.\n"
+        }
+      },
+      "name": "AI Agent2",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        3664,
+        608
+      ],
+      "id": "04b2c5af-8300-480d-ac3b-3fa1ccb6facc"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-preview-05-20",
+        "options": {
+          "temperature": 0.5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        3648,
+        880
+      ],
+      "id": "b13e20ef-0765-4038-85ef-cd16fa1c215a",
+      "name": "Google Gemini Chat Model1"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "=typing_{{ $('Telegram Trigger').item.json.message.from.id.toString() }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        4560,
+        672
+      ],
+      "id": "aa8427cd-2422-4de0-983b-b878bc1a7820",
+      "name": "Clear Previous Conversations"
+    },
+    {
+      "parameters": {
+        "operation": "incr",
+        "key": "=typing_{{ $('Telegram Trigger').item.json.message.from.id.toString() }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        5104,
+        688
+      ],
+      "id": "f2ddbc83-deca-45ed-b56b-779cf0e02fb6",
+      "name": "Counter"
+    },
+    {
+      "parameters": {
+        "operation": "sendChatAction",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        5280,
+        688
+      ],
+      "id": "a31700ec-ffaa-45da-b568-e0d52c75dd23",
+      "name": "Send Typing Action",
+      "webhookId": "6cb7aad8-7210-437e-bde9-460db89782ba"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "typing",
+        "key": "=typing_{{ $('Telegram Trigger').item.json.message.from.id.toString() }}",
+        "options": {
+          "dotNotation": false
+        }
+      },
+      "name": "Get Counter Value",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        5488,
+        688
+      ],
+      "id": "6b9a8c7a-0458-4ce7-b899-e5f4c4cff2a6"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "55096fe2-3538-42b8-beb6-102e010b6b6c",
+              "leftValue": "={{ $('Get Counter Value').item.json.typing }}",
+              "rightValue": "={{ $('Split Paragraphs & Writing Delay1').item.json.delayArray.length }}",
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        5872,
+        688
+      ],
+      "id": "6e0b49ce-52d5-472d-bff2-ea9c16bde3ff",
+      "name": "Finished Typing"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "=typing_{{ $('Telegram Trigger').item.json.message.from.id.toString() }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        6288,
+        672
+      ],
+      "id": "76300b2c-a45a-483d-a320-0045f7cdfabe",
+      "name": "Reset Counter"
+    },
+    {
+      "parameters": {
+        "jsCode": "const ONE_MINUTE      = 60;\nconst SECONDS_TO_WAIT = 4;\nconst WORDS_PER_MIN = 80;\n\nconst inItem   = $input.first();\nconst fullText = (inItem.json.output ?? '').trim();\n\nconst paragraphs = fullText\n  .split(/\\n\\s*\\n/)\n  .filter(p => p.length);\n\nconst wordsPerSec = WORDS_PER_MIN / ONE_MINUTE;\n\nreturn paragraphs.map(paragraph => {\n  const wordCount = paragraph.split(/\\s+/).length;\n  let delay       = Math.ceil(wordCount / wordsPerSec);\n\n  if (delay > ONE_MINUTE) delay = ONE_MINUTE;\n\n  const delayArray = [];\n  let remaining    = delay;\n\n  if (remaining <= SECONDS_TO_WAIT) {\n    delayArray.push(Number(remaining.toFixed(2)));\n  } else {\n    while (remaining > SECONDS_TO_WAIT) {\n      delayArray.push(SECONDS_TO_WAIT);\n      remaining -= SECONDS_TO_WAIT;\n    }\n    if (remaining > 0) {\n      delayArray.push(Number(remaining.toFixed(2)));\n    }\n  }\n\n  return {\n    json: {\n      paragraph,  \n      delayArray     \n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4304,
+        672
+      ],
+      "id": "556f653b-598d-4512-a70c-74a2549b8908",
+      "name": "Split Paragraphs & Writing Delay1"
+    },
+    {
+      "parameters": {
+        "operation": "information"
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        944,
+        704
+      ],
+      "id": "0b189f2a-19f3-4e8c-8fae-4dc96ce32c2f",
+      "name": "Edit Image"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b4bec628-0972-4cf3-a58e-35289257eef3",
+              "name": "text",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1328,
+        320
+      ],
+      "id": "ca36a484-91a2-4716-a80a-dc0a69baf210",
+      "name": "Normalize Content"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bd33db4c-9606-447c-9098-bd1fbe36c90c",
+              "name": "text",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        944,
+        528
+      ],
+      "id": "e9710d21-3b71-40b4-b7d4-93db37079fc4",
+      "name": "Normalize Content1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b4bec628-0972-4cf3-a58e-35289257eef3",
+              "name": "text",
+              "value": "={{ $json.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1328,
+        704
+      ],
+      "id": "c8d98087-8708-41bc-9b27-94144e19932f",
+      "name": "Normalize Content2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "01fb6f07-fe7a-4029-a660-efc02a662335",
+              "name": "text",
+              "value": "={{ $json.markdown }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1984,
+        912
+      ],
+      "id": "a030a840-870e-400c-afc6-5def6591d61b",
+      "name": "Normalize Content3"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {
+          "download": false
+        }
+      },
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        48,
+        720
+      ],
+      "id": "fee88fb9-c3c1-4784-a122-89cdd3a66e19",
+      "webhookId": "afb6e9e6-71ef-4d7b-abd3-18526c88ef48"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.voice.mime_type }}",
+                    "rightValue": "audio/ogg",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "c6117e1e-21aa-4ed4-ac15-f5dabbc9ca95"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "4344a1ac-3d62-4039-a944-09b5373a1c2c",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "0da13526-dd88-44d3-8369-cd009130c7bf",
+                    "leftValue": "={{ $json.message.photo }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "array",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Image"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e56af66d-f132-42f0-a2b1-29c351240f70",
+                    "leftValue": "={{ $json.message.document }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Document"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "129b3a26-f79a-49ea-94d4-8fe142cfb9bd",
+                    "leftValue": "={{ $json.message.video || $json.message.video_note}}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Video"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Any Other"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        288,
+        672
+      ],
+      "id": "dfbc1124-f602-427d-a812-85a47a42df79",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Telegram Trigger').item.json.message.photo[$('Telegram Trigger').item.json.message.photo.length -1 ].file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        720,
+        704
+      ],
+      "id": "9eb3f4fd-8bd2-4da3-b842-831ec1f90e40",
+      "name": "Get Image File",
+      "webhookId": "1071cbf2-54d8-4005-b067-5a9f592eb1b0"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Telegram Trigger').item.json.message.document.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        720,
+        928
+      ],
+      "id": "90e729d6-c4b9-4a5f-81d4-af634816d575",
+      "name": "Get Document File",
+      "webhookId": "1071cbf2-54d8-4005-b067-5a9f592eb1b0"
+    },
+    {
+      "parameters": {
+        "amount": "={{ $json.delay }}"
+      },
+      "name": "Wait (Random Delay)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2704,
+        624
+      ],
+      "id": "d114d3c9-1f47-459c-a506-b08970f0ac06",
+      "webhookId": "3c7eaa1d-4691-44b0-8b11-a716fa0611cd"
+    },
+    {
+      "parameters": {
+        "amount": "={{ $('Split Paragraphs & Writing Delay1').item.json.delayArray[ $('Get Counter Value').item.json.typing -1 ] }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        5680,
+        688
+      ],
+      "id": "0120cb01-25c1-42ec-ba51-7711db81d1ca",
+      "name": "Wait (Typing)",
+      "webhookId": "60385871-b7b7-4274-945c-2ae0e609a0b2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1552,
+        944
+      ],
+      "id": "48831f8e-1a23-4d61-a4c4-a731ff815cc0",
+      "name": "Wait",
+      "webhookId": "4296dc51-5bf5-4489-bdfc-eff6d430fc68"
+    },
+    {
+      "parameters": {
+        "operation": "sendChatAction",
+        "chatId": "={{ $('When Executed by Another Workflow').item.json.message_from_id }}",
+        "action": "record_audio"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4304,
+        432
+      ],
+      "id": "e8685b0a-ff0a-4105-ade8-62e1f11eb9b6",
+      "name": "Send Record Audio Action",
+      "webhookId": "9945e9f4-9999-46df-8c9a-ab117c3e0af9"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "input": "={{ $('When Executed by Another Workflow').item.json.output }}",
+        "options": {
+          "response_format": "opus"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        4512,
+        432
+      ],
+      "id": "a8310674-f2fa-4843-8bc1-8026733a6891",
+      "name": "Generate Audio"
+    },
+    {
+      "parameters": {
+        "operation": "sendAudio",
+        "chatId": "={{ $('When Executed by Another Workflow').item.json.message_from_id }}",
+        "binaryData": true,
+        "additionalFields": {
+          "parse_mode": "HTML",
+          "reply_to_message_id": "={{ $('When Executed by Another Workflow').item.json.message_message_id }}"
+        }
+      },
+      "name": "Send Audio Message",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4688,
+        432
+      ],
+      "id": "de3dc4d7-aa39-46a2-8d56-8649210f4064",
+      "webhookId": "c205aea3-7027-4a38-97e7-661f6182fa09"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        4832,
+        672
+      ],
+      "id": "a22f961c-3882-47a1-a447-371cc043c5ab",
+      "name": "Loop Over Items (Paragraph)"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{$('Split Paragraphs & Writing Delay1').item.json.paragraph }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "name": "Send Text Message",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        6080,
+        672
+      ],
+      "id": "5a3a13b6-b43f-45ef-b514-4c4e2dd05a0e",
+      "webhookId": "c205aea3-7027-4a38-97e7-661f6182fa09"
+    },
+    {
+      "parameters": {
+        "content": "## 💡 **¿Cómo se construyó este workflow?**  \n### Mira la explicación completa en el vídeo 👇\n[![Haz clic para ver el tutorial](https://img.youtube.com/vi/rWN_LS6cnXc/hqdefault.jpg)](https://youtu.be/rWN_LS6cnXc)\n",
+        "height": 460,
+        "width": 500,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "50575522-023a-4629-ac61-3e0ae49e8ffe",
+      "name": "Sticky Note"
+    }
+  ],
+  "connections": {
+    "Get Audio File": {
+      "main": [
+        [
+          {
+            "node": "Transcribe Recording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe Recording": {
+      "main": [
+        [
+          {
+            "node": "Normalize Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze image": {
+      "main": [
+        [
+          {
+            "node": "Normalize Content2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Doc": {
+      "main": [
+        [
+          {
+            "node": "Get Doc Processing Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Doc Processing Info": {
+      "main": [
+        [
+          {
+            "node": "Is Ready",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Ready": {
+      "main": [
+        [
+          {
+            "node": "Download Markdown Info",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Markdown Info": {
+      "main": [
+        [
+          {
+            "node": "Normalize Content3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Text to Redis": {
+      "main": [
+        [
+          {
+            "node": "Split Paragraphs & Reading Delay",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Continue Condition": {
+      "main": [
+        [
+          {
+            "node": "Delete Redis Key",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Paragraphs & Reading Delay": {
+      "main": [
+        [
+          {
+            "node": "Wait (Random Delay)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Text from Redis3": {
+      "main": [
+        [
+          {
+            "node": "Check Continue Condition",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Message": {
+      "main": [
+        [
+          {
+            "node": "Save Text to Redis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wikipedia2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Should Respond With Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Redis Key": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Respond With Audio": {
+      "main": [
+        [
+          {
+            "node": "Send Record Audio Action",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Split Paragraphs & Writing Delay1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clear Previous Conversations": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items (Paragraph)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Counter": {
+      "main": [
+        [
+          {
+            "node": "Send Typing Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Typing Action": {
+      "main": [
+        [
+          {
+            "node": "Get Counter Value",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Counter Value": {
+      "main": [
+        [
+          {
+            "node": "Wait (Typing)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finished Typing": {
+      "main": [
+        [
+          {
+            "node": "Send Text Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Counter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reset Counter": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items (Paragraph)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Paragraphs & Writing Delay1": {
+      "main": [
+        [
+          {
+            "node": "Clear Previous Conversations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image": {
+      "main": [
+        [
+          {
+            "node": "Analyze image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Content": {
+      "main": [
+        [
+          {
+            "node": "Get Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Content1": {
+      "main": [
+        [
+          {
+            "node": "Get Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Content2": {
+      "main": [
+        [
+          {
+            "node": "Get Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Content3": {
+      "main": [
+        [
+          {
+            "node": "Get Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Get Audio File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Normalize Content1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Image File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Document File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "Notify About Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Image File": {
+      "main": [
+        [
+          {
+            "node": "Edit Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Document File": {
+      "main": [
+        [
+          {
+            "node": "Upload Doc",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait (Random Delay)": {
+      "main": [
+        [
+          {
+            "node": "Get Text from Redis3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait (Typing)": {
+      "main": [
+        [
+          {
+            "node": "Finished Typing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get Doc Processing Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Record Audio Action": {
+      "main": [
+        [
+          {
+            "node": "Generate Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Audio": {
+      "main": [
+        [
+          {
+            "node": "Send Audio Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items (Paragraph)": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Counter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Text Message": {
+      "main": [
+        [
+          {
+            "node": "Reset Counter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "b82b354f-f6c2-4d88-af83-7022de7c637e",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "createdAt": "2025-10-21T02:44:42.515Z",
+      "updatedAt": "2025-10-21T02:44:42.515Z",
+      "role": "workflow:owner",
+      "workflowId": "cYv9g09LdUXfOhRL",
+      "projectId": "Hsc2LcKTpV0xRSJz"
+    }
+  ],
+  "tags": []
+}
