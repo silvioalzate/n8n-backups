@@ -1,0 +1,80 @@
+{
+  "createdAt": "2025-09-11T22:58:29.888Z",
+  "updatedAt": "2025-09-12T03:14:59.000Z",
+  "id": "kPWTeGdJeYgX4buk",
+  "name": "INTEGRACION CON NOTION",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d724785e-1454-4ada-bb3b-12b6f3642c82",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "resource": "database",
+        "databaseId": {
+          "__rl": true,
+          "value": "26ba85d7-28fe-80ff-b515-d9efa1055ed4",
+          "mode": "list",
+          "cachedResultName": "CRM de Ventas",
+          "cachedResultUrl": "https://www.notion.so/26ba85d728fe80ffb515d9efa1055ed4"
+        }
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "6f6d7a6b-27b4-45e6-9551-cdab074e76c0",
+      "name": "Get a database",
+      "credentials": {
+        "notionApi": {
+          "id": "DW0I5ZAwQ33mw5mP",
+          "name": "Notion account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get a database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "2842fdc2-564f-45ed-a2ae-d751b36d95ce",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "createdAt": "2025-09-11T22:58:29.891Z",
+      "updatedAt": "2025-09-11T22:58:29.891Z",
+      "role": "workflow:owner",
+      "workflowId": "kPWTeGdJeYgX4buk",
+      "projectId": "Hsc2LcKTpV0xRSJz"
+    }
+  ],
+  "tags": []
+}
