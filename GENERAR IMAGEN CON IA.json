@@ -1,0 +1,499 @@
+{
+  "createdAt": "2025-09-13T00:10:35.855Z",
+  "updatedAt": "2025-09-13T02:51:30.000Z",
+  "id": "3gGyeSy7bnasyl3F",
+  "name": "GENERAR IMAGEN CON IA",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8c4d8c11-db61-496e-92ad-62553bb0fa1c",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "# INSTRUCTIONS\n\nPerform the following tasks, in order:\n\n1. Fetch the top 10 stories from Hacker News from the past 24 hours related to AI or LLMs. \n\n2. Select the top story that is most likely to go viral on social media. \n\n3. Fetch the article and Hacker News comments.\n\n4. Create a 20-second monologue script for an AI avatar video, following these guidelines:\n   - The script should be approximately 30 seconds when spoken aloud.\n   - Include lots of details and statistics from the article.\n   - Use 6th grade reading level.\n   - Balanced viewpoint.\n\n5. Update the script's first sentence to use sensational viral hooks, tailored to the content, that grab the viewer's attention.\n\n6. Replace the last sentence with: \"Hit follow to stay ahead in AI!\"\n\n# OUTPUT FORMAT\n\nONLY output the exact video script. Do not output anything else. NEVER include intermediate thoughts, notes, or formatting.",
+        "options": {
+          "returnIntermediateSteps": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        208,
+        0
+      ],
+      "id": "13277f28-5648-4e69-a37d-eb84d3b425ef",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        160,
+        176
+      ],
+      "id": "e9ea5f95-c31a-4da4-a30e-88b0c987cc15",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ifSfOafkdG41fDnn",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        288,
+        176
+      ],
+      "id": "a0b654a7-141a-4a21-a2f8-268be3ee666a",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "url": "https://silvioalzate.shop",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        496,
+        0
+      ],
+      "id": "e8b73d56-87d1-44e3-9d34-bcb6c764d208",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "formTitle": "Crear nuevo Petición",
+        "formDescription": "Formulario para crear peticiones",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Descripción",
+              "placeholder": "Descripción",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Caantidad",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "1"
+                  },
+                  {
+                    "option": "2"
+                  },
+                  {
+                    "option": "3"
+                  },
+                  {
+                    "option": "4"
+                  },
+                  {
+                    "option": "5"
+                  }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        64,
+        368
+      ],
+      "id": "2a9f3192-f707-4c4a-932c-877d905cc58e",
+      "name": "On form submission",
+      "webhookId": "d1903ea6-ab36-4c3a-a72c-d71100e7f7d4"
+    },
+    {
+      "parameters": {
+        "content": "## HUGGINGFACE\n\n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",
+        "height": 144
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        464,
+        208
+      ],
+      "id": "569f2702-6ace-41c9-8daf-2c19bd7dab44",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "inputs",
+              "value": "={{ $json.output }}"
+            },
+            {}
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        832,
+        384
+      ],
+      "id": "a0916df9-ee7a-471b-ae1f-1dcdde1f2bed",
+      "name": "HTTP Request1",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "u2AH0EyVhU74QqER",
+          "name": "Bearer Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.0-flash-exp-image-generation",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.0-flash-exp-image-generation"
+        },
+        "prompt": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        880,
+        208
+      ],
+      "id": "5ecd7316-49e1-4ed4-90a1-bce45a06125c",
+      "name": "Generate an image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ifSfOafkdG41fDnn",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const cantidad = $input.first().json.Caantidad\nconst pages = []\nfor (let i = 1; i <= cantidad; i++) {\n  pages.push({page: i})  \n}\nreturn pages.map(page => ({JSON: page}))"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        368
+      ],
+      "id": "e36026d4-0761-49aa-b5ff-294802c5d1f6",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "batchSize": "={{ $json.JSON.page }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        368,
+        368
+      ],
+      "id": "963e9301-909d-4ef2-b674-3988a08c5e94",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        560,
+        544
+      ],
+      "id": "5a553d7a-d687-4d4b-99c1-745168788541",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ifSfOafkdG41fDnn",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=genera un prompt profesional para crear una imagen fotorealista con el siguiente texto {{ $('On form submission').item.json['Descripción'] }} responde unicamente con el prompt y responde en inglés",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        384
+      ],
+      "id": "b45725b9-c1c8-4399-ab28-40f74f225a8d",
+      "name": "AI Agent1"
+    }
+  ],
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        []
+      ]
+    },
+    "Generate an image": {
+      "main": [
+        []
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "On form submission": [
+      {
+        "json": {
+          "Descripción": "Crea un trex caminando por la playa usando gafas",
+          "Caantidad": "5",
+          "submittedAt": "2025-09-12T21:41:01.544-04:00",
+          "formMode": "test"
+        }
+      }
+    ],
+    "Code": [
+      {
+        "json": {
+          "JSON": {
+            "page": 1
+          }
+        }
+      },
+      {
+        "json": {
+          "JSON": {
+            "page": 2
+          }
+        }
+      },
+      {
+        "json": {
+          "JSON": {
+            "page": 3
+          }
+        }
+      },
+      {
+        "json": {
+          "JSON": {
+            "page": 4
+          }
+        }
+      },
+      {
+        "json": {
+          "JSON": {
+            "page": 5
+          }
+        }
+      }
+    ],
+    "AI Agent1": [
+      {
+        "json": {
+          "output": "A hyperrealistic, ultra-detailed professional photograph of a majestic Tyrannosaurus Rex confidently strolling along a pristine sandy beach, wearing stylish sunglasses. The T-Rex has intricate scaly skin texture, realistic musculature, and a powerful silhouette against the ocean backdrop. Golden hour sunlight bathes the scene, creating shimmering reflections on the wet sand and gentle ocean waves. Shot with a high-end DSLR (e.g., Canon EOS R5) and a prime lens (e.g., 85mm f/1.4), featuring a shallow depth of field that keeps the T-Rex in sharp, crisp focus. Cinematic lighting, natural color palette, high resolution, award-winning wildlife photography, National Geographic style."
+        }
+      }
+    ],
+    "Generate an image": [
+      {
+        "json": {
+          "mimeType": "image/png",
+          "fileType": "image",
+          "fileExtension": "png",
+          "fileName": "image.png",
+          "fileSize": "1.39 MB"
+        }
+      }
+    ]
+  },
+  "versionId": "9e15188c-c129-4506-9cbd-a96143d47c8f",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "createdAt": "2025-09-13T00:10:35.858Z",
+      "updatedAt": "2025-09-13T00:10:35.858Z",
+      "role": "workflow:owner",
+      "workflowId": "3gGyeSy7bnasyl3F",
+      "projectId": "Hsc2LcKTpV0xRSJz"
+    }
+  ],
+  "tags": [
+    {
+      "createdAt": "2025-09-13T02:48:40.095Z",
+      "updatedAt": "2025-09-13T02:48:40.095Z",
+      "id": "A3XDqatyADWmSIf0",
+      "name": "FLUX"
+    },
+    {
+      "createdAt": "2025-09-09T20:21:58.530Z",
+      "updatedAt": "2025-09-09T20:21:58.530Z",
+      "id": "Rns9cvDBQ6Nyjkk7",
+      "name": "GEMINI"
+    },
+    {
+      "createdAt": "2025-09-13T02:46:34.202Z",
+      "updatedAt": "2025-09-13T02:46:34.202Z",
+      "id": "Uq2VefHu98QsDaAR",
+      "name": "HUGGINGFACE"
+    }
+  ]
+}
