@@ -1,0 +1,340 @@
+{
+  "createdAt": "2025-10-21T01:42:58.200Z",
+  "updatedAt": "2025-10-21T01:42:58.200Z",
+  "id": "1IjqtgAxryKrBKoO",
+  "name": "Send Private Welcome Messages to New WhatsApp Group Members with Evolution API",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## WhatsApp Group Welcome Message Automation\n\nThis workflow automatically sends a personalized welcome message to new members who join your WhatsApp group.\n\n### How it works\n1. **Webhook** receives notifications when someone joins your group\n2. **Filter** checks if it's your specific group\n3. **If** node verifies it's a new member joining (not leaving)\n4. **Wait** node adds a delay to make the message feel more natural\n5. **HTTP Request** sends the welcome message via Evolution API\n\n### Setup Instructions\n1. Configure the **Set Variables** node with your credentials\n2. Update your Evolution API webhook to point to this workflow's webhook URL\n3. Test by having someone join your group\n\n### Youtube video\nhttps://youtu.be/WO2MJoQqLvo\n\n### Requirements\n- Evolution API instance (self-hosted or cloud)\n- WhatsApp Business connected to Evolution API\n- Group admin permissions",
+        "height": 640,
+        "width": 500,
+        "color": 6
+      },
+      "id": "7cb53e04-9028-4a1d-8a9d-90e9404cdece",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        368,
+        240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-group-welcome",
+        "options": {}
+      },
+      "id": "664a1877-b92e-4254-bd77-5b2fec53fe61",
+      "name": "Webhook - Receive Group Events",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        1040,
+        448
+      ],
+      "webhookId": "69cde77c-86df-4573-96a3-3444732040c2",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "content": "⚙️ **Configure all variables here**\n\nUpdate these values with your own credentials and preferences",
+        "width": 170
+      },
+      "id": "9db51839-242e-45f8-bc39-6d191a4f130c",
+      "name": "Sticky Note 1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1248,
+        240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "group-id",
+              "name": "groupId",
+              "type": "string",
+              "value": "your_group_id@g.us"
+            },
+            {
+              "id": "api-key",
+              "name": "apiKey",
+              "type": "string",
+              "value": "YOUR-API-KEY-HERE"
+            },
+            {
+              "id": "instance-name",
+              "name": "instanceName",
+              "type": "string",
+              "value": "YourInstanceName"
+            },
+            {
+              "id": "evolution-url",
+              "name": "evolutionApiUrl",
+              "type": "string",
+              "value": "https://your-evolution-api.com"
+            },
+            {
+              "id": "welcome-message",
+              "name": "welcomeMessage",
+              "type": "string",
+              "value": "👋 Welcome to our community! \n\nWe're excited to have you here. If you have any questions or need assistance, feel free to ask. \n\nLet's grow together! 🚀"
+            },
+            {
+              "id": "wait-time",
+              "name": "waitMinutes",
+              "type": "number",
+              "value": 1
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a4bae5fe-6215-4785-8014-53bcad7f44f3",
+      "name": "Set Variables - Configure Here",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1280,
+        448
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "check-group-id",
+              "operator": {
+                "name": "filter.operator.equals",
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.body.data.id }}",
+              "rightValue": "={{ $('Set Variables - Configure Here').item.json.groupId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "890c7d0b-584f-4c42-9c62-75bf5823b93e",
+      "name": "Filter - Check if Target Group",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        1520,
+        448
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "check-action",
+              "operator": {
+                "name": "filter.operator.equals",
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.body.data.action }}",
+              "rightValue": "add"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c38bf61c-e2af-4637-ae8a-d51af11b5ca9",
+      "name": "If - New Member Joined",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1040,
+        640
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "amount": "={{ $('Set Variables - Configure Here').item.json.waitMinutes }}",
+        "unit": "minutes"
+      },
+      "id": "109b3071-6f95-4a8d-afec-f938db5f6f23",
+      "name": "Wait - Natural Delay",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        1280,
+        640
+      ],
+      "webhookId": "e908013a-1ab0-476e-bae2-0efbe562b5d7",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Set Variables - Configure Here').item.json.evolutionApiUrl }}/message/sendText/{{ $('Set Variables - Configure Here').item.json.instanceName }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $('Set Variables - Configure Here').item.json.apiKey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $json.body.data.participants[0] }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Set Variables - Configure Here').item.json.welcomeMessage }}"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true,
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "1b6d56e8-03f2-4fbe-a859-00ddbfb19715",
+      "name": "Send Welcome Message",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1520,
+        640
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "content": "📝 **Webhook Configuration**\n\nCopy the webhook URL from this node and configure it in your Evolution API instance",
+        "width": 200
+      },
+      "id": "d4b1eb74-feb8-47e1-8928-51d587c1ce34",
+      "name": "Sticky Note 2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        976,
+        240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "✅ **Success!**\n\nThe welcome message has been sent to the new member",
+        "height": 120,
+        "width": 180
+      },
+      "id": "7b3d4744-4a64-4c10-a071-94e61cd6c676",
+      "name": "Sticky Note 3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1472,
+        784
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "Wait - Natural Delay": {
+      "main": [
+        [
+          {
+            "node": "Send Welcome Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - New Member Joined": {
+      "main": [
+        [
+          {
+            "node": "Wait - Natural Delay",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter - Check if Target Group": {
+      "main": [
+        [
+          {
+            "node": "If - New Member Joined",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Variables - Configure Here": {
+      "main": [
+        [
+          {
+            "node": "Filter - Check if Target Group",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Receive Group Events": {
+      "main": [
+        [
+          {
+            "node": "Set Variables - Configure Here",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateId": "6462"
+  },
+  "pinData": {},
+  "versionId": "d5ade81c-eb92-49ed-b133-dc01693daac4",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "createdAt": "2025-10-21T01:42:58.204Z",
+      "updatedAt": "2025-10-21T01:42:58.204Z",
+      "role": "workflow:owner",
+      "workflowId": "1IjqtgAxryKrBKoO",
+      "projectId": "Hsc2LcKTpV0xRSJz"
+    }
+  ],
+  "tags": []
+}
