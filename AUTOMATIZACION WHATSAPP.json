@@ -1,0 +1,569 @@
+{
+  "createdAt": "2025-11-10T22:29:11.831Z",
+  "updatedAt": "2025-11-10T22:47:15.000Z",
+  "id": "FZtQKIyKSj6iWyzn",
+  "name": "AUTOMATIZACION WHATSAPP",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "id": "9cb4ff72-1303-45ad-a160-e1621a8c274e",
+      "name": "WhatsApp Trigger",
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "position": [
+        -1104,
+        368
+      ],
+      "typeVersion": 1,
+      "webhookId": "d9161b04-1d76-4932-9f46-b876da3c47d9",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "ntg19xpGe3o6RBEh",
+          "name": "WhatsApp OAuth account"
+        }
+      },
+      "notes": "Punto de entrada: Espera mensajes entrantes de WhatsApp. Se activará con cualquier tipo de mensaje (texto, audio, etc.). [Fuente: ddc0fdb7-bacc-4f41-87bf-48bb714a404d]"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Eres un clasificador de intenciones estricto. Analiza el mensaje entrante de WhatsApp: {{ $json.messages.text.body }}\n\nTu única tarea es identificar el propósito principal del usuario y devolver *exactamente* uno de los siguientes números, sin texto adicional, explicaciones ni formato:\n\n1. Si el mensaje es una pregunta general, consulta de información o requiere Base de Conocimiento (FAQ/Dudas).\n\n2. Si el mensaje es para agendar, cancelar o modificar una cita o reserva.\n\n3. Si el mensaje se relaciona con productos, links de compra (Hotmart) o requiere búsqueda en la web.\n\n4. Si el mensaje es para comprobar o confirmar un pago ya realizado.\n\nInstrucción Final: Devuelve SOLO el número de categoría (1, 2, 3 o 4).",
+        "batching": {}
+      },
+      "id": "87a765f1-c92d-4203-98b1-5b1beb9e4621",
+      "name": "Delegatory LLM (Agente Jefe)",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        -912,
+        368
+      ],
+      "typeVersion": 1.7,
+      "notes": "Agente principal (Jefe) que clasifica el intento del usuario (1, 2, 3 o 4) utilizando un prompt estricto. Esto permite delegar el trabajo a los agentes especializados."
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "1",
+                    "id": "67b04d65-8691-41b6-a63f-03b9939efa2e"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "2",
+                    "id": "f068be4a-7820-4b9b-86a9-ceb358b2d64c"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "3",
+                    "id": "3fc48cdc-efde-45b4-a35a-9907fa0cdcc1"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "4",
+                    "id": "aa6651af-92f3-4c30-ba83-e46db3b597bc"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9c90887a-f0fc-48f5-90c3-03173d894438",
+      "name": "Route Intent (Switch)",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        -624,
+        336
+      ],
+      "typeVersion": 3.2,
+      "notes": "Enruta la solicitud al agente especializado correcto basándose en la salida numérica del Delegatory LLM."
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "76042a52-73e6-4056-8149-5e8b37607ca5",
+      "name": "OpenAI Chat Model (GPT-4o-mini)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        -304,
+        128
+      ],
+      "typeVersion": 1.2,
+      "notes": "Modelo de lenguaje para el Agente de Base de Conocimiento, utilizando 'gpt-4o-mini' para eficiencia y rapidez en respuestas de FAQ. [Basado en la configuración de la plantilla de Knowledge Base: c36731ce-5086-4a2f-8c3a-63be150fb8ae]"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "FAQ_Policy_Docs",
+        "toolDescription": "Utiliza esta herramienta para buscar respuestas en la Base de Conocimiento oficial y responder a preguntas sobre políticas, servicios o dudas generales.",
+        "mongoCollection": {
+          "__rl": true,
+          "mode": "list",
+          "value": "knowledge_base"
+        },
+        "vectorIndexName": "data_index",
+        "options": {}
+      },
+      "id": "24c78e24-1fa1-4b5d-9ae6-0d276e2a2f8d",
+      "name": "MongoDB Vector Store (KB Search)",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreMongoDBAtlas",
+      "position": [
+        -176,
+        256
+      ],
+      "typeVersion": 1.1,
+      "credentials": {
+        "mongoDb": {
+          "id": "mcmiOgNthe410xVA",
+          "name": "MongoDB account"
+        }
+      },
+      "notes": "Herramienta Vector Store para la Base de Conocimiento. Busca documentos relevantes (RAG) para responder consultas de FAQ/Dudas. Es esencial para la precisión del Agente de Conocimiento. [Basado en la configuración de la plantilla de Knowledge Base: fda97aec-70be-4611-94a3-7816e384c76b]"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Consulta de usuario: {{ $('WhatsApp Trigger').item.json.messages.text.body }}",
+        "options": {
+          "systemMessage": "Eres un Agente experto en soporte y atención al cliente. Responde a todas las consultas de los usuarios de forma clara, amigable y profesional. Prioriza siempre la información obtenida a través de la herramienta 'FAQ_Policy_Docs'. Si la consulta es simple, responde directamente. Si es compleja, usa la herramienta de búsqueda de documentos."
+        }
+      },
+      "id": "fb1201d7-fb85-4c05-9c82-faf14b4a1973",
+      "name": "Knowledge Base Agent (FAQ/Dudas)",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        96,
+        160
+      ],
+      "typeVersion": 1.9,
+      "notes": "Agente especializado en resolver dudas. Utiliza el LLM y la Base de Vectores (MongoDB) para respuestas informadas. [Basado en la configuración de la plantilla de Knowledge Base: d1b47f60-5a4d-4629-a18d-b3c6ec0c972c]"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "silvioalzate@gmail.com",
+          "mode": "list",
+          "cachedResultName": "silvioalzate@gmail.com"
+        },
+        "start": "2025-11-10T00:00:00",
+        "end": "2025-11-10T00:00:00",
+        "useDefaultReminders": false,
+        "additionalFields": {
+          "location": "Online Meeting"
+        }
+      },
+      "id": "3e3c2992-b039-4c9d-82c6-60942525c06c",
+      "name": "Google Calendar Tool (Citas)",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "position": [
+        -400,
+        656
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "ReMJGXmApW6SOLH1",
+          "name": "Google Calendar account"
+        }
+      },
+      "notes": "Herramienta de Google Calendar para que el Agente de Citas pueda interactuar con el calendario (agendar, actualizar). [Basado en la configuración de la plantilla HR Agent: 45026096-21d4-4f24-ba47-6922284a23cb]"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "0481f6c4-8031-41d3-ab46-c0bea668788a",
+      "name": "OpenAI Chat Model (Reservas)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        -592,
+        624
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "jUO2dUfgpxHxZJXq",
+          "name": "OpenAi account"
+        }
+      },
+      "notes": "Modelo de lenguaje dedicado al Agente de Citas/Reservas."
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=El cliente quiere agendar o preguntar por disponibilidad. Consulta: {{ $('WhatsApp Trigger').item.json.messages.text.body }}",
+        "options": {
+          "systemMessage": "Eres el Agente de Agendamiento. Debes usar la herramienta 'Google Calendar Tool' para confirmar o crear citas. Si falta información (fecha, hora), solicítala educadamente al usuario."
+        }
+      },
+      "id": "2a0ec3c3-966d-4582-912a-4744691100a6",
+      "name": "Appointment Agent (Agendar Citas)",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        96,
+        416
+      ],
+      "typeVersion": 2,
+      "notes": "Agente especializado en gestionar el agendamiento de citas. Utiliza el prompt de Citas/Reservas y la herramienta Google Calendar."
+    },
+    {
+      "parameters": {},
+      "id": "a0a2f970-0445-493a-bf84-cc57e907857d",
+      "name": "SerpApi Tool (Web Search)",
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+      "position": [
+        -304,
+        816
+      ],
+      "typeVersion": 1.1,
+      "notes": "Herramienta de búsqueda web (SerpApi o similar) que proporciona acceso a información en tiempo real, crucial para el Agente de Productos/Hotmart."
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "id": "0b3285d8-8566-4a83-b57c-8a944ebc0b8a",
+      "name": "Google Sheets Tool (Hotmart Links)",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "position": [
+        -160,
+        720
+      ],
+      "typeVersion": 4.6,
+      "notes": "Herramienta para buscar y obtener enlaces de Hotmart o detalles de productos desde la Google Sheet de Catálogo."
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Solicitud de producto/Hotmart: {{ $('WhatsApp Trigger').item.json.messages.text.body }}",
+        "options": {
+          "systemMessage": "Eres un Agente Comercial experto en productos y ventas. Tu función es encontrar y proporcionar enlaces de Hotmart. Usa la 'Google Sheets Tool' para links directos y 'SerpApi Tool' como respaldo para buscar información de productos."
+        }
+      },
+      "id": "6a462bb4-edfb-4640-af57-e7dc244fe3dc",
+      "name": "Product & Hotmart Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        96,
+        720
+      ],
+      "typeVersion": 2,
+      "notes": "Agente dedicado a la búsqueda y envío de links de productos (Hotmart) y detalles de venta, utilizando Google Sheets y búsqueda web."
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Solicitud de comprobación de pago: {{ $('WhatsApp Trigger').item.json.messages.text.body }}",
+        "options": {
+          "systemMessage": "Eres un Agente de validación de pagos. Debes usar la herramienta 'Google Sheets Tool (Payment Status)' para verificar el estado del pago del cliente ({{ $('WhatsApp Trigger').item.json.contacts.wa_id }}). Responde con la confirmación o un mensaje indicando que el pago está pendiente. No asumas ni inventes estados de pago."
+        }
+      },
+      "id": "34512b7a-d835-48db-a4f1-438299108762",
+      "name": "Payment Check Agent (Comprobar Pago)",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        96,
+        1024
+      ],
+      "typeVersion": 2,
+      "notes": "Agente que se encarga de confirmar el estado de pago. Requiere una herramienta de Google Sheets para acceder al estado de `Estado_Pago`."
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentId": {
+          "__rl": true,
+          "value": "1omOfbLsKyOo0alQ_rWPS6wxGbYCBBMkf2_Lhb-__mos",
+          "mode": "list",
+          "cachedResultName": "PLANTILLA CÁLCULO SERVICIOS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1omOfbLsKyOo0alQ_rWPS6wxGbYCBBMkf2_Lhb-__mos/edit?usp=drivesdk"
+        }
+      },
+      "id": "cac7e8d0-13a8-4b82-b26b-24bf52791d7d",
+      "name": "Google Sheets Tool (Payment Status)",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "position": [
+        -160,
+        1120
+      ],
+      "typeVersion": 4.6,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kO9YUNarC46J5hqt",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "Herramienta para buscar el estado de pago del cliente en la hoja de Google Sheets, utilizando el ID de WhatsApp como filtro."
+    },
+    {
+      "parameters": {
+        "mode": "wait"
+      },
+      "id": "ea8f8ab0-e9b1-4ec4-942a-4b9339fd1f26",
+      "name": "Merge All Outputs",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        400,
+        528
+      ],
+      "typeVersion": 3.2,
+      "notes": "Une las salidas de todos los agentes especializados para crear una única respuesta final. Utiliza el modo 'wait' o 'combine' según se necesite, pero 'wait' simplifica la salida del agente."
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.messages.from }}",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "id": "201f0c4d-c664-45a7-b78d-6e17cebe8cd8",
+      "name": "Send Final Response (WhatsApp)",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        608,
+        528
+      ],
+      "typeVersion": 1,
+      "webhookId": "78502199-4fd4-4ff8-8500-db6cd6a80293",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "QRZ52Eitt6BLosVZ",
+          "name": "WhatsApp account"
+        }
+      },
+      "notes": "Envía el mensaje generado por el agente especializado de vuelta al cliente de WhatsApp."
+    },
+    {
+      "parameters": {},
+      "id": "98d4417f-e74e-4a2d-94ad-9c5d6771a35a",
+      "name": "Send Internal Alert (On Error)",
+      "type": "n8n-nodes-base.sendEmail",
+      "position": [
+        96,
+        16
+      ],
+      "typeVersion": 1.2,
+      "notes": "Nodo de alerta para notificar a un equipo interno (vía email, Slack o Telegram) cuando un agente o proceso falla. Es crucial para el monitoreo y la robustez."
+    }
+  ],
+  "connections": {
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "Delegatory LLM (Agente Jefe)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delegatory LLM (Agente Jefe)": {
+      "main": [
+        [
+          {
+            "node": "Route Intent (Switch)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Intent (Switch)": {
+      "main": [
+        [
+          {
+            "node": "Knowledge Base Agent (FAQ/Dudas)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Appointment Agent (Agendar Citas)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Product & Hotmart Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Payment Check Agent (Comprobar Pago)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Knowledge Base Agent (FAQ/Dudas)": {
+      "main": [
+        [
+          {
+            "node": "Merge All Outputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Appointment Agent (Agendar Citas)": {
+      "main": [
+        [
+          {
+            "node": "Merge All Outputs",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge All Outputs": {
+      "main": [
+        [
+          {
+            "node": "Send Final Response (WhatsApp)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Product & Hotmart Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge All Outputs",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Payment Check Agent (Comprobar Pago)": {
+      "main": [
+        [
+          {
+            "node": "Merge All Outputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "f678de9c-8a79-48b4-b6d9-7a1cd239b76a",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "createdAt": "2025-11-10T22:29:11.835Z",
+      "updatedAt": "2025-11-10T22:29:11.835Z",
+      "role": "workflow:owner",
+      "workflowId": "FZtQKIyKSj6iWyzn",
+      "projectId": "Hsc2LcKTpV0xRSJz"
+    }
+  ],
+  "tags": []
+}
