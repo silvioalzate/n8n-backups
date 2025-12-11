@@ -1,0 +1,313 @@
+{
+  "createdAt": "2025-10-21T02:45:15.348Z",
+  "updatedAt": "2025-12-11T18:26:32.000Z",
+  "id": "OjWgOqZZXZdr7yXm",
+  "name": "BACKUP N8N EN GIT",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "filters": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        -480
+      ],
+      "id": "2cbd3cd1-22f5-4e09-a60a-35609a97a11d",
+      "name": "Get many workflows",
+      "credentials": {
+        "n8nApi": {
+          "id": "IqgENhHNiLAqEa7m",
+          "name": "n8n account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -288,
+        -480
+      ],
+      "id": "800329e9-f2ff-41cb-9b67-53c212e7c62b",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "95a588a5-3da5-4d74-b6a1-20f38d7bc171",
+              "leftValue": "={{ $json.isArchived }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -80,
+        -464
+      ],
+      "id": "e465df29-558b-45c8-8616-8c5003daeca5",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0ce24f4e-f38f-4f55-a978-57c404251e17",
+              "name": "nodes",
+              "value": "={{ JSON.stringify($json, null, 2) }}",
+              "type": "string"
+            },
+            {
+              "id": "c66d661a-785f-43a2-a21d-f53fdcd51a02",
+              "name": "fileName",
+              "value": "={{ $json.name }}.json",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        80,
+        -480
+      ],
+      "id": "87aeb1cf-55df-4b2f-ac5f-1109ee7f5c05",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "nodes",
+        "binaryPropertyName": "={{ $json.fileName }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        -480
+      ],
+      "id": "e02d929c-2819-41bc-839d-c3680af4d83f",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -592,
+        -480
+      ],
+      "id": "77a84278-589a-4f78-a7f0-59995516f6a0",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "file",
+        "owner": {
+          "__rl": true,
+          "value": "silvioalzate",
+          "mode": "list",
+          "cachedResultName": "silvioalzate",
+          "cachedResultUrl": "https://github.com/silvioalzate"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n-backups",
+          "mode": "list",
+          "cachedResultName": "n8n-backups",
+          "cachedResultUrl": "https://github.com/silvioalzate/n8n-backups"
+        },
+        "filePath": "={{ $('Edit Fields').item.json.fileName }}",
+        "binaryData": true,
+        "binaryPropertyName": "={{ $('Edit Fields').item.json.fileName }}",
+        "commitMessage": "={{ $now.format('yyyy-MM-dd') }} - {{ $('Edit Fields').item.json.fileName }} Backup Completed"
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        384,
+        -480
+      ],
+      "id": "876a2a72-51cd-46c3-8877-020be73e1c7e",
+      "name": "Create a file",
+      "webhookId": "d9d8513b-c72c-4e11-acab-87c3b1c75a20",
+      "executeOnce": false,
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "notesInFlow": false,
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "b7TZMUG9zaDmpZHe",
+          "name": "GitHub account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "1552990592",
+        "text": "Error al guardar flujo ",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        592,
+        -464
+      ],
+      "id": "deb050df-5b2f-4116-9599-4120c66463f6",
+      "name": "Send a text message",
+      "webhookId": "b2a08675-f343-4d43-8369-85539635d7fe",
+      "credentials": {
+        "telegramApi": {
+          "id": "ftEzQ8MqdpB8KEw8",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Get many workflows": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get many workflows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Create a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a file": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "082e7abc-4ca7-4bac-8aba-d1a20da43a45",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "createdAt": "2025-10-21T02:45:15.351Z",
+      "updatedAt": "2025-10-21T02:45:15.351Z",
+      "role": "workflow:owner",
+      "workflowId": "OjWgOqZZXZdr7yXm",
+      "projectId": "Hsc2LcKTpV0xRSJz"
+    }
+  ],
+  "tags": []
+}
