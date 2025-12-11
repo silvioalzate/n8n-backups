@@ -1,0 +1,476 @@
+{
+  "createdAt": "2025-10-13T17:22:56.851Z",
+  "updatedAt": "2025-10-15T00:35:10.000Z",
+  "id": "J1PIKGF60Gnywv9x",
+  "name": "My workflow",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://router.huggingface.co/together/v1/images/generations",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer $HF_TOKEN"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "prompt",
+              "value": "={{ $json.content.parts[0].text }}"
+            },
+            {
+              "name": "response_format",
+              "value": "base64"
+            },
+            {
+              "name": "model",
+              "value": "black-forest-labs/FLUX.1-schnell"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        464,
+        0
+      ],
+      "id": "ff32f97b-67f8-4fd5-bf6c-9410d50984a9",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "formTitle": "Image Generator",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Idea"
+            },
+            {
+              "fieldLabel": "Quantity",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "1"
+                  },
+                  {
+                    "option": "2"
+                  },
+                  {
+                    "option": "3"
+                  },
+                  {
+                    "option": "4"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -288,
+        -16
+      ],
+      "id": "6c8bae76-9444-4552-ba32-d5c743de5529",
+      "name": "On form submission",
+      "webhookId": "e9338f32-b302-4d82-bf31-4cb40b45aaf6"
+    },
+    {
+      "parameters": {
+        "jsCode": "const quantity = $input.first().json.Quantity;\nconst pages = [];\nfor (let i = 1; i <= quantity; i++) {\n  pages.push({page: i});  \n}\nreturn pages.map(page => ({json: page}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -144,
+        -16
+      ],
+      "id": "9aa425e9-5b6d-4c04-b9de-926d24261a7f",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "batchSize": "={{ $('On form submission').item.json.Quantity }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        0,
+        -16
+      ],
+      "id": "0a7cfbcc-b1d8-4ec5-a821-b29a61ecc30f",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Act as an expert prompt engineer specializing in cinematic photography and hyper-realistic art.  \nYour task is to generate a highly detailed prompt for creating a POV (point of view) image that feels immersive, realistic, and visually stunning.\n\nRules:\n1. The prompt must be written in English.\n2. Include rich details about:\n   - The viewer’s perspective (e.g. “from the eyes of someone holding…”, “POV: you are standing in…”).\n   - The environment (lighting, weather, time of day, atmosphere, depth of field, lens type, focal length).\n   - The main subject and their action.\n   - The photographic or cinematic style (hyper-realistic, cinematic lighting, 8k, ultra-detailed textures, bokeh, photorealistic skin tones).\n3. Write it in a descriptive, visual, and immersive tone — avoid mentioning AI, render, or technical commands.\n4. If the user provides a theme (e.g. “serving coffee”, “opening a door”, “looking at the ocean”), naturally integrate it into the POV scene.\n\nExample output:\n> “POV: you are holding a steaming cup of coffee near a wooden window, early morning sunlight pouring through soft curtains, shallow depth of field, detailed hand textures, cinematic lighting, hyper-realistic 8k photography, Nikon D850 lens style.”\n\nNow generate a POV hyper-realistic prompt for the following theme: {{ $('On form submission').item.json.Idea }}."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        192,
+        0
+      ],
+      "id": "dc2a14f8-211e-404b-879c-211eddae02ef",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ifSfOafkdG41fDnn",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://router.huggingface.co/fal-ai/fal-ai/wan/v2.2-a14b/image-to-video",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "_subdomain",
+              "value": "queue"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer $HF_TOKEN"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "image_url"
+            },
+            {
+              "name": "prompt"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        608,
+        0
+      ],
+      "id": "9d1a5523-6256-4b40-8aa4-3c50dbc5b48f",
+      "name": "HTTP Request1",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "u2AH0EyVhU74QqER",
+          "name": "HUGGINGFACE"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.minimax.io/v1/video_generation",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer $MINIMAX_API_KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "prompt",
+              "value": "A mouse runs toward the camera, smiling and blinking."
+            },
+            {
+              "name": "first_frame_image",
+              "value": "https://cdn.hailuoai.com/prod/2024-09-18-16/user/multi_chat_file/9c0b5c14-ee88-4a5b-b503-4f626f018639.jpeg"
+            },
+            {
+              "name": "model",
+              "value": "MiniMax-Hailuo-02"
+            },
+            {
+              "name": "duration",
+              "value": "6"
+            },
+            {
+              "name": "resolution",
+              "value": "1080P"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        -304
+      ],
+      "id": "b4336688-4f28-4190-8fe0-963439f7e952",
+      "name": "MINIMAX",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "inXSlnCE0kbVgYKl",
+          "name": "MINIMAX"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.0-flash-exp-image-generation",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.0-flash-exp-image-generation"
+        },
+        "prompt": "={{ $json.content.parts[0].text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        240,
+        -160
+      ],
+      "id": "5050e111-1eed-4353-a4bd-f049743c577a",
+      "name": "Generate an image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ifSfOafkdG41fDnn",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Generate an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MINIMAX": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "On form submission": [
+      {
+        "json": {
+          "Idea": "An astronaut in mars, with crocs and Mickey Mouse ears",
+          "Quantity": "4",
+          "submittedAt": "2025-10-13T15:41:06.379-04:00",
+          "formMode": "test"
+        }
+      }
+    ],
+    "Code": [
+      {
+        "json": {
+          "page": 1
+        }
+      },
+      {
+        "json": {
+          "page": 2
+        }
+      },
+      {
+        "json": {
+          "page": 3
+        }
+      },
+      {
+        "json": {
+          "page": 4
+        }
+      }
+    ],
+    "Message a model": [
+      {
+        "json": {
+          "content": {
+            "parts": [
+              {
+                "text": "A surreal and whimsical scene unfolds on the dusty, red surface of Mars. An astronaut, clad in a bulky, pristine white spacesuit, stands casually amidst the alien landscape.\n\nHowever, this isn't your typical space explorer. Perched comically on top of their clear, reflective helmet is a classic **black Mickey Mouse ear headband**, the round ears contrasting sharply with the helmet's curves. The visor reflects a sliver of the ochre sky and distant red mountains.\n\nDown below, instead of heavy space boots, the astronaut's feet are sporting a pair of brightly **yellow Crocs**, complete with the iconic holes and the strap flipped back for maximum comfort. They appear slightly dusted with the rusty Martian regolith, looking utterly out of place yet perfectly at home in this absurd tableau.\n\nThe ground beneath them is a rusty, iron-oxide red, scattered with dark volcanic rocks and pebbles. In the background, jagged, distant red mountains rise against a hazy, butterscotch-orange sky, hinting at the thin Martian atmosphere. The sunlight is stark and alien, casting long, sharp shadows that stretch out behind the anachronistically outfitted astronaut.\n\nThe overall impression is one of playful defiance of the harsh alien environment, a quirky blend of serious exploration and utter, delightful absurdity."
+              }
+            ],
+            "role": "model"
+          },
+          "finishReason": "STOP",
+          "index": 0
+        }
+      },
+      {
+        "json": {
+          "content": {
+            "parts": [
+              {
+                "text": "Imagine this:\n\nA lone astronaut stands on the desolate, rust-red surface of Mars. Their sturdy, dust-caked spacesuit, perhaps a muted ochre or a deep burnt orange, looks ready for any cosmic challenge. The helmet's reflective gold visor gleams, mirroring the endless expanse of the Martian desert and the pale, butterscotch sky.\n\nBut then the details emerge.\n\nPerched jauntily atop their helmet are a classic pair of **black, velvet-textured Mickey Mouse ears**, perfectly round and iconic, adding an utterly surreal and whimsical touch to the otherwise serious space gear.\n\nAnd down at their feet, instead of heavy Martian boots designed for rugged terrain, are a pair of brightly colored, perhaps **lime green or vibrant blue, Crocs**, complete with the iconic holes and the strap flipped back over the heel. They look ridiculously out of place, yet the astronaut wears them with an air of casual defiance, as if it's the most natural and comfortable footwear for interstellar travel.\n\nThe vast Martian landscape stretches around them: rolling dunes of crimson dust, sharp, rust-colored rocks, and a distant, hazy horizon under a salmon-pink sky where the faint Martian sun casts long, stark shadows. It's a scene of whimsical absurdity, a perfect blend of high-stakes space exploration and playful, almost defiant, individuality. The astronaut might even have one hand on their hip, striking a pose of confident, slightly goofy, comfort."
+              }
+            ],
+            "role": "model"
+          },
+          "finishReason": "STOP",
+          "index": 0
+        }
+      },
+      {
+        "json": {
+          "content": {
+            "parts": [
+              {
+                "text": "A whimsical yet striking scene unfolds on the desolate landscape of Mars.\n\nA lone **astronaut**, clad in a gleaming, pristine white space suit, stands proudly on the rust-red, rocky Martian surface. Their bulky, reflective helmet, typically reserved for serious exploration, is adorned with **comically large, black Mickey Mouse ears**, standing upright and adding an immediate touch of pure, unadulterated playfulness.\n\nLooking down, instead of heavy-duty space boots, their feet are encased in a pair of brightly colored (perhaps lime green or vibrant yellow) **Crocs**. The distinctive holes and backstrap are clearly visible, a surreal pop of Earthly casual comfort against the alien terrain.\n\nThe astronaut might be gazing out at the panoramic vista of dusty craters and distant, ochre-red mountains, a sense of wonder mixed with the sheer absurdity of their attire. The low Martian sun casts long, dramatic shadows, highlighting the rugged textures of the alien world, while a faint, reddish dust hangs in the thin, salmon-pink sky. The whole image is a delightful and humorous juxtaposition of the extreme frontier of space exploration with symbols of childhood joy and laid-back leisure."
+              }
+            ],
+            "role": "model"
+          },
+          "finishReason": "STOP",
+          "index": 0
+        }
+      },
+      {
+        "json": {
+          "content": {
+            "parts": [
+              {
+                "text": "An astronaut stands confidently on the desolate, rusty-red plains of Mars. The bulky, pristine white spacesuit, usually a symbol of ultimate professionalism, takes on an undeniable air of playful absurdity.\n\nInstead of rugged moon boots, their feet are encased in a pair of shockingly bright **lime green Crocs**, complete with the signature ventilation holes and an irreverent strap slung forward. They stand firmly in the Martian dust, creating little indentations.\n\nBut the most striking detail is perched jauntily on top of their curved, reflective helmet: a classic pair of shiny black **Mickey Mouse ears**, almost comically oversized against the high-tech headgear. The visor of the helmet reflects the stark, reddish-orange horizon and the surprisingly bright, butterscotch-hued sky.\n\nAround them, the Martian landscape stretches out: rolling dunes of fine, reddish-orange dust, scattered jagged rocks, and in the distance, the faint outline of towering Martian mountains under a hazy, salmon-pink atmosphere. The low Martian sun casts long, dramatic shadows behind them, highlighting the astronaut's unique silhouette – a true pioneer, with a wonderfully whimsical touch."
+              }
+            ],
+            "role": "model"
+          },
+          "finishReason": "STOP",
+          "index": 0
+        }
+      }
+    ]
+  },
+  "versionId": "d939ee65-cc94-4874-b729-aa66190500cf",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "createdAt": "2025-10-13T17:22:56.859Z",
+      "updatedAt": "2025-10-13T17:22:56.859Z",
+      "role": "workflow:owner",
+      "workflowId": "J1PIKGF60Gnywv9x",
+      "projectId": "Hsc2LcKTpV0xRSJz"
+    }
+  ],
+  "tags": []
+}
