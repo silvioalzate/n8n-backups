@@ -1,0 +1,117 @@
+{
+  "createdAt": "2025-10-21T02:39:14.008Z",
+  "updatedAt": "2025-10-21T02:39:14.008Z",
+  "id": "hGT52sjnP3yoiMCq",
+  "name": "CONVERTIR BASE64",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "instance-connect",
+        "instanceName": "JP2"
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        144,
+        -48
+      ],
+      "id": "5eefc2ed-6e1e-4946-a34a-74f3115e6172",
+      "name": "Create Instance1",
+      "credentials": {
+        "evolutionApi": {
+          "id": "6KPhn5dEaCDohf2U",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "da9320f8-82e5-480d-ace3-ed68a3911f17",
+              "name": "base64",
+              "value": "={{ $json.data.base64.split(\",\")[1] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        352,
+        -48
+      ],
+      "id": "07b32fa1-20e1-4697-83da-02cf64fcc792",
+      "name": "Clean Up Base64"
+    },
+    {
+      "parameters": {
+        "mode": "jsonToBinary",
+        "convertAllData": false,
+        "sourceKey": "=base64",
+        "options": {
+          "dataIsBase64": true,
+          "fileName": "qrcode.png",
+          "mimeType": "image/png"
+        }
+      },
+      "id": "b952b7f9-ffbb-44da-9a6d-47886f07a44d",
+      "name": "Convert to/from binary data",
+      "type": "n8n-nodes-base.moveBinaryData",
+      "typeVersion": 1,
+      "position": [
+        544,
+        -48
+      ]
+    }
+  ],
+  "connections": {
+    "Create Instance1": {
+      "main": [
+        [
+          {
+            "node": "Clean Up Base64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Up Base64": {
+      "main": [
+        [
+          {
+            "node": "Convert to/from binary data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "e45132b6-c29a-4010-b17b-b43106e0b6b1",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "createdAt": "2025-10-21T02:39:14.010Z",
+      "updatedAt": "2025-10-21T02:39:14.010Z",
+      "role": "workflow:owner",
+      "workflowId": "hGT52sjnP3yoiMCq",
+      "projectId": "Hsc2LcKTpV0xRSJz"
+    }
+  ],
+  "tags": []
+}
